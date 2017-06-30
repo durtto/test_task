@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test task</title>
+    <link type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        {% for site in sites %}
+        <th>{{ site.name }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    {% for odd, values in odds %}
+    <tr>
+        <td>{{ odd }}</td>
+        {% for site in sites %}
+        <td>{{ values[site] }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+</body>
+<script type="text/javascript"
+        src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    socket.on('connect', function () {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+</script>
+</html>
