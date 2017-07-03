@@ -1,5 +1,10 @@
 import json
 from threading import Thread
+import requests
+import lxml
+from lxml import html
+from io import StringIO
+from lxml import etree
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send
 
@@ -13,11 +18,13 @@ class Odd():
 
 
 class BaseMarketParser:
+    url = None
+
     @property
     def name(self):
         return ""
 
-    def parse(self, url):
+    def parse(self):
         """
         :return dict {Odd.name: Odd}
         """
@@ -36,7 +43,17 @@ class SkyBet(BaseMarketParser):
 
 
 class Bet365(BaseMarketParser):
-    pass
+    url = 'https://www.bet365.com/?lng=1&amp;cb=105812028182#/AC/B2/C101/' \
+          'D20170703/E20537844/F65742225/G1/P11/'
+
+    def parse(self):
+        page = requests.get(self.url)
+        if page.status_code != 200:
+            return False
+        tree = html.fromstring(page.content)
+        horses = tree.xpath(
+            '//span[@class="rl-HorseTrainerJockey_Horse"]/text()')
+        print horses
 
 
 class PaddyPower(BaseMarketParser):
@@ -83,5 +100,5 @@ def index():
 parse_thread = Thread(target=parse_loop)
 
 if __name__ == '__main__':
-    parse_thread.start()
+    # parse_thread.start()
     socketio.run(app)
