@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Test task</title>
-    <link type="text/css"
+    <link rel="stylesheet" type="text/css"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
@@ -13,15 +13,15 @@
     <tr>
         <th>Name</th>
         {% for site in sites %}
-        <th>{{ site.name }}</th>
+        <th>{{ site }}</th>
         {% endfor %}
     </tr>
     </thead>
-    {% for odd, values in odds %}
+    {% for odd, values in odds.items() %}
     <tr>
         <td>{{ odd }}</td>
         {% for site in sites %}
-        <td>{{ values[site] }}</td>
+        <td>{{ values[site].print_value if values[site] else '-' }}</td>
         {% endfor %}
     </tr>
     {% endfor %}
