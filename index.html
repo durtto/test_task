@@ -3,21 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Test task</title>
-    <link rel="stylesheet" type="text/css"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
 </head>
 <body>
+{% for event_name, event_odds in odds.items() %}
+<h1>{{ event_name }}</h1>
 <table class="table">
     <thead>
     <tr>
-        <th>Name</th>
+        <th>Horse</th>
         {% for site in sites %}
         <th>{{ site }}</th>
         {% endfor %}
     </tr>
     </thead>
-    {% for odd, values in odds.items() %}
+    {% for odd, values in event_odds.items() %}
     <tr>
         <td>{{ odd }}</td>
         {% for site in sites %}
@@ -26,13 +45,6 @@
     </tr>
     {% endfor %}
 </table>
+{% endfor %}
 </body>
-<script type="text/javascript"
-        src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
-    socket.on('connect', function () {
-        socket.emit('my event', {data: 'I\'m connected!'});
-    });
-</script>
 </html>

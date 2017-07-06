@@ -1,22 +1,7 @@
-import requests
-from lxml import html
-import json
 import re
+import requests
 
-url = 'http://www.paddypower.com/racing/horse-racing/deauville/11%3a25-STAKES-6f-101yds-12518007.html'
-
-
-def parse():
-    page = requests.get(url)
-    if page.status_code != 200:
-        return False
-    m = re.search('hr_ev_init\((.*),"",\'!!!!!!!!!',
-                  page.content.replace('\n', ''))
-    if m:
-        found = m.group(1)
-        found = "[%s]" % found
-        js = json.loads(found)
-        for odd in js[3]:
-            if not odd['lp_den']: continue
-            print '%s - %s/%s' % (
-                odd['names']['en'], odd['lp_num'], odd['lp_den'])
+url = 'https://www.bet365.com/SportsBook.API/web?lid=1&zid=9&pd=%23AC%23B2%23C101%23D20170706%23E20538211%23F65791671%23K20538211%23M65791671%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791673%23K20538211%23M65791673%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791676%23K20538211%23M65791676%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791677%23K20538211%23M65791677%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791678%23K20538211%23M65791678%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791680%23K20538211%23M65791680%23P11%23%3A%23AC%23B2%23C101%23D20170706%23E20538211%23F65791683%23K20538211%23M65791683%23P11%23%3A&cid=195&cg=0'
+page = requests.get(url)
+for m in re.findall('NA=([^;]*);OD=([^;]*);', page.text.replace('\n', '')):
+    print(m)
