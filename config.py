@@ -19,10 +19,11 @@ EVENTS = {
                 '1%23D20170706%23E20538211%23F65791683%23K20538211%23M65791683'
                 '%23P11%23%3A&cid=195&cg=0',
             'PaddyPower':
-                'http://www.paddypower.com/racing/horse-racing/'
-                'deauville/11%3a25-STAKES-6f-101yds-12518007.html',
+                'http://www.paddypower.com/racing/horse-racing/vaal/'
+                '15%3a55-HANDICAP-1m-99y-12522144.html',
             'WilliamHill':
-                'http://sports.williamhill.com/bet/en-gb/results///E/11336004/'
-                'thisDate/2017/07/03/17:00:00//5%3a00+Pontefract.html'
+                'http://sports.williamhill.com/bet/en-gb/betting/e/11354438/3%3a55.html',
+            'SkyBet': 'https://www.skybet.com/horse-racing/yarmouth/event/'
+                      '20955250',
         }
 }

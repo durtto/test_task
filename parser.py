@@ -42,14 +42,42 @@ class BaseMarketParser:
 def calculate_probabilities(odds):
     sum = 0
     for odd in odds:
-        sum += 1 / odd['value']
+        if odd:
+            sum += 1 / odd['value']
     for odd in odds:
-        odd['probability'] = 1 / odd['value'] / sum
+        if odd:
+            odd['probability'] = 1 / odd['value'] / sum
 
 
 # Parsers impl
 class SkyBet(BaseMarketParser):
     name = "SkyBet"
+
+    def parse(self, url):
+        page = requests.get(url)
+        if page.status_code != 200:
+            return {}
+        tree = html.fromstring(page.text)
+        horses = tree.xpath(
+            '/td[@class="runner-info section-end"]/div[@class="oc-runner '
+            'oc-horse"]/h4/text()')
+        scores_num = tree.xpath(
+            '//td[starts-with(@class,"win text-centre")]/@data-oc-num')
+        scores_den = tree.xpath(
+            '//td[starts-with(@class,"win text-centre")]/@data-oc-num')
+        scores = zip(scores_den, scores_num)
+        horses = [h.strip() for h in horses if h.strip()]
+
+        result = {}
+        i = 0
+        for score in scores:
+            horse = horses[i]
+            i += 1
+            print_value = '%s/%s' % (score[0], score[1])
+            value = float(score[0]) / int(score[1])
+            result[horse] = Odd(horse, value, print_value, 0).to_dict()
+        calculate_probabilities(result.values())
+        return result
 
 
 class Bet365(BaseMarketParser):
@@ -60,16 +88,23 @@ class Bet365(BaseMarketParser):
         if page.status_code != 200:
             return {}
         result = {}
-        for m in re.findall('NA=([^;]*);OD=([^;]*);',
-                            page.text.replace('\n', '')):
+        matches = re.findall('NA=([^;]*);OD=([^;]*);',
+                             page.text.replace('\n', ''))
+        if not matches:
+            return {}
+        for m in matches:
             horse = m[0]
             print_value = m[1]
             if print_value == 'SP':
                 continue
             odd, to = print_value.split('/')
-            value = float(odd) / int(to)
+            try:
+                value = float(odd) / int(to)
+            except TypeError:
+                value = None
             result[horse] = Odd(horse, value, print_value, 0).to_dict()
         calculate_probabilities(result.values())
+        return result
 
 
 class PaddyPower(BaseMarketParser):
@@ -92,9 +127,13 @@ class PaddyPower(BaseMarketParser):
             horse = odd['names']['en']
             odd, to = int(odd['lp_num']), int(odd['lp_den'])
             print_value = '%s/%s' % (odd, to)
-            value = float(odd) / to
-            result[horse] = Odd(horse, value, print_value, 0)
+            try:
+                value = float(odd) / int(to)
+            except TypeError:
+                value = None
+            result[horse] = Odd(horse, value, print_value, 0).to_dict()
         calculate_probabilities(result.values())
+        return result
 
 
 class WilliamHill(BaseMarketParser):
@@ -103,30 +142,32 @@ class WilliamHill(BaseMarketParser):
     def parse(self, url):
         page = requests.get(url)
         if page.status_code != 200:
-            return False
+            return {}
         tree = html.fromstring(page.text)
         horses = tree.xpath(
-                '//table[@class="md_runnerDetails md_rd_template5"]//'
-                'td[@class="md_runner"]/text()')
+            '//table[@class="md_runnerDetails md_rd_template2"]//'
+            'td[@class="md_runner"]/text()')
         scores = tree.xpath(
-                '//table[@id="meetingData_results"]//td[@class="md_column5"]/'
-                'strong/text()')
+            '//td[contains(@class,"racecardBoldCenter")]/a/text()')
         horses = [h.strip() for h in horses if h.strip()]
         scores = [h.strip() for h in scores]
 
         result = {}
         for horse, value in zip(horses, scores):
             print_value = value
-            odd, to = print_value.split('/')
-            real_value = float(odd) / int(to)
+            try:
+                odd, to = print_value.split('/')
+                real_value = float(odd) / int(to)
+            except Exception:
+                real_value = None
             result[horse] = Odd(horse, real_value, print_value, 0).to_dict()
         calculate_probabilities(result.values())
         return result
 
 
 parsers = {}
-for parser in BaseMarketParser.__subclasses__():
-    instance = parser()
+for p in BaseMarketParser.__subclasses__():
+    instance = p()
     parsers[instance.name] = instance
 
 
@@ -137,7 +178,8 @@ def update_odds():
 
 def update_event_odds(event, sites):
     for parser_name, url in sites.items():
-        site_odds = parsers[parser_name].parse(url)
+        parser = parsers[parser_name]
+        site_odds = parser.parse(url)
         for odd, value in site_odds.items():
             if not odds.get(odd):
                 odds[event][odd] = {parser.name: value}
